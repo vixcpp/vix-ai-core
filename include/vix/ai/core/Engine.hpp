@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <memory>
+#include <numeric>
 #include "Tensor.hpp"
 #include "Device.hpp"
 
@@ -15,15 +16,22 @@ namespace vix::ai::core
 
         const Device &device() const noexcept { return device_; }
 
-        // hyper basique: "compute" renvoie une string informative
         std::string compute(const Tensor &t) const
         {
-            (void)t; // unused for now
-            return std::string{"Engine["} + device().name() + "] ok";
+            // mini “kernel”: somme des éléments pour vérifier le chemin critique
+            float sum = std::accumulate(t.data().begin(), t.data().end(), 0.0f);
+            return std::string{"Engine["} + device().name() + "] rank=" +
+                   std::to_string(t.rank()) + " numel=" + std::to_string(t.numel()) +
+                   " sum=" + std::to_string(sum);
+        }
+
+        std::string info() const
+        {
+            return std::string{"vix-ai-core Engine on "} + device().name();
         }
 
     private:
-        Device device_{}; // default CPU
+        Device device_{};
     };
 
 } // namespace vix::ai::core
